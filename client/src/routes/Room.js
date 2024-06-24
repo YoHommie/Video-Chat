@@ -148,7 +148,7 @@
 //         else{
 //             alert("Invalid offer");
 //         }
-        
+
 //     }
 
 //     function toggleVideo() {
@@ -525,17 +525,17 @@ const Room = (props) => {
                         {role === 'host' && (
                             <>
                                 <Label>Username:</Label>
-                                <Input 
-                                    type="text" 
-                                    value={username} 
-                                    onChange={(e) => setUsername(e.target.value)} 
+                                <Input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                 />
 
                                 <Label>Password:</Label>
-                                <Input 
-                                    type="text" 
-                                    value={password} 
-                                    onChange={(e) => setPassword(e.target.value)} 
+                                <Input
+                                    type="text"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                 />
                             </>
                         )}
@@ -543,26 +543,26 @@ const Room = (props) => {
                         {role === 'participant' && (
                             <>
                                 <Label>Username:</Label>
-                                <Input 
-                                    type="text" 
-                                    value={username} 
-                                    onChange={(e) => setUsername(e.target.value)} 
+                                <Input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                 />
 
                                 <Label>Date of Birth:</Label>
-                                <Input 
-                                    type="date" 
-                                    value={dob} 
-                                    onChange={(e) => setDob(e.target.value)} 
+                                <Input
+                                    type="date"
+                                    value={dob}
+                                    onChange={(e) => setDob(e.target.value)}
                                 />
                             </>
                         )}
 
                         <Label>Offer:</Label>
-                        <Input 
-                            type="text" 
-                            value={offer} 
-                            onChange={(e) => setOffer(e.target.value)} 
+                        <Input
+                            type="text"
+                            value={offer}
+                            onChange={(e) => setOffer(e.target.value)}
                         />
 
                         <Button type="button" onClick={check}>Check</Button>
