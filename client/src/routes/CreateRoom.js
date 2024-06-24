@@ -120,10 +120,10 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { v4 as uuid } from 'uuid';
+// import { v4 as uuid } from 'uuid';
 import axios from 'axios';
 
-let URL = process.env.URL || 'http://localhost:8000';
+let URL = process.env.URL || 'http://localhost:3000';
 
 const CreateRoom = (props) => {
     const [role, setRole] = useState(null); // State to store the user's role
@@ -145,9 +145,13 @@ const CreateRoom = (props) => {
         }
     }, []);
 
-    function create() {
-        const id = uuid();
-        const offer = Math.floor(1000 + Math.random() * 9000);
+    let create= async() =>{
+        let response = await axios.get(`${URL}/createRoom`);
+        console.log(response.data);
+        let id = response.data.roomID;
+        let offer =response.data.offer;
+        // const id = uuid();
+        // const offer = Math.floor(1000 + Math.random() * 9000);
         setOffer(offer);
         setUrl(`${URL}/room/${id}`);
         localStorage.setItem('offer', offer);
