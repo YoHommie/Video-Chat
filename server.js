@@ -6,6 +6,9 @@ const server = http.createServer(app);
 const socket = require("socket.io");
 const io = socket(server);
 
+app.use(express.json());
+app.use(express.static(__dirname+'/client/build'));
+
 const users = {};
 
 const socketToRoom = {};
