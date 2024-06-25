@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 // import { v4 as uuid } from 'uuid';
 import axios from 'axios';
-const DSS_URL = 'https://23ab-103-158-43-20.ngrok-free.app';
-// const URL = 'https://5510-103-158-43-20.ngrok-free.app';
-const URL ='http://localhost:8000';
+import config from '../config.json';
+const DSS_URL = config.DSS_URL || 'http://localhost:3000';
+const URL = config.URL || 'http://localhost:8000';
 
 
 const CreateRoom = () => {
