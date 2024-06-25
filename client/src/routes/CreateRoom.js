@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 // import { v4 as uuid } from 'uuid';
 import axios from 'axios';
-const URL = 'https://d6ec-103-158-43-20.ngrok-free.app';
-// const URL ='https://localhost:8000';
+// const DSS_URL = 'http://localhost:3000';
+// const URL = 'https://5510-103-158-43-20.ngrok-free.app';
+const URL ='http://localhost:8000';
 
 
 const CreateRoom = () => {
@@ -21,6 +22,7 @@ const CreateRoom = () => {
             setIsHostVerified(true);
             setClientId(localStorage.getItem('clientID'));
             setUsername(localStorage.getItem('username'));
+            setParticipant([localStorage.getItem('username')]);
         }
     }, []);
 
@@ -30,18 +32,16 @@ const CreateRoom = () => {
         try {
             event.preventDefault();
             // // keep this commented  if you are using local host
-            // let res = await axios.post('http://localhost:3000/login', { client_id: clientId, username, password });
+            // let res = await axios.post(`${DSS_URL}/login`, { client_id: clientId, username, password });
             // console.log(res.data);
-
-
             // Perform verification logic here (e.g., check username and password) 
             // For demonstration purposes, we'll assume the verification is successful
 
-            setIsHostVerified(true);
-            handleAddParticipant(username,0);
+            handleAddParticipant(username, 0);
             localStorage.setItem('validHostUser', 'true');
             localStorage.setItem('clientID', clientId);
             localStorage.setItem('username', username);
+            setIsHostVerified(true);
             alert("Verification successful!");
         } catch (err) {
             alert("Invalid credentials!");
@@ -53,7 +53,7 @@ const CreateRoom = () => {
         try {
             event.preventDefault();
             //passing the clientID and participant details to the backend
-            let response = await axios.post(`${URL}/createRoom`, { client_id: localStorage.getItem('clientID'), participant: participant});
+            let response = await axios.post(`${URL}/createRoom`, { client_id: localStorage.getItem('clientID'), participant: participant });
             setParticipantCreated(true);
             console.log(response.data);
             let id = response.data.roomID;
@@ -66,7 +66,7 @@ const CreateRoom = () => {
         }
     };
 
-    const handleAddParticipant = (value,index) => {
+    const handleAddParticipant = (value, index) => {
         let temp = [...participant];
         temp[index] = value;
         setParticipant(temp);
@@ -75,41 +75,42 @@ const CreateRoom = () => {
     return (
         <div className="create-room-container">
             <div className="role-section">
-                <div>You are a host:</div>
                 {!isHostVerified ? (
-                    <form onSubmit={handleSubmitHost} className="host-form">
-                        <div className="form-group">
-                            <label>
-                                Client Id:
-                                <input
-                                    type="text"
-                                    value={clientId}
-                                    onChange={(e) => setClientId(e.target.value)}
-                                />
-                            </label>
-                        </div>
-                        <div className="form-group">
-                            <label>
-                                Username:
-                                <input
-                                    type="text"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
-                                />
-                            </label>
-                        </div>
-                        <div className="form-group">
-                            <label>
-                                Password:
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                            </label>
-                        </div>
-                        <button type="submit">Submit</button>
-                    </form>
+                    <div>
+                        <div>You are a host:</div>
+                        <form onSubmit={handleSubmitHost} className="host-form">
+                            <div className="form-group">
+                                <label>
+                                    Client Id:
+                                    <input
+                                        type="text"
+                                        value={clientId}
+                                        onChange={(e) => setClientId(e.target.value)}
+                                    />
+                                </label>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    Username:
+                                    <input
+                                        type="text"
+                                        value={username}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                    />
+                                </label>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    Password:
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                </label>
+                            </div>
+                            <button type="submit">Submit</button>
+                        </form></div>
                 ) : (
                     // crating participant detail form here
                     !participantCreated ?
@@ -128,7 +129,7 @@ const CreateRoom = () => {
                                 </div>
                                 {
                                     //displaying the form based on the number of participants
-                                    Array.from({ length: ParticipantNumber }, (_, i) => i).map((item, index) => {
+                                   ParticipantNumber>3?(<div><h3>Number of Participant should be less then or equal to 3</h3></div>): Array.from({ length: ParticipantNumber }, (_, i) => i).map((item, index) => {
                                         return (
                                             <div key={index}>
                                                 <div className="form-group">
@@ -136,8 +137,8 @@ const CreateRoom = () => {
                                                         Participant {index + 1} Name:
                                                         <input
                                                             type="text"
-                                                            value={username}
-                                                            onChange={(e) => {handleAddParticipant(e.target.value,index);}}
+                                                            value={participant[index+1]}
+                                                            onChange={(e) => { handleAddParticipant(e.target.value, index + 1); }}
                                                         />
                                                     </label>
                                                 </div>
@@ -159,7 +160,7 @@ const CreateRoom = () => {
                                             <div>Offer: {offerlist[index]}</div>
                                         </div>
                                     )
-                                })} 
+                                })}
                             </div>
                         )
                 )}

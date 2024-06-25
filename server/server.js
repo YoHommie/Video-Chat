@@ -23,16 +23,27 @@ app.post('/createRoom', async (req, res) => {
     const clientID = req.body.client_id;
     let ParticipantNumber = req.body.participant.length;
     let offerlist = [];
+    let typeList = [];
+    let participants = req.body.participant;
+    if(ParticipantNumber>3){
+        res.status(400).send("Max 3 participants allowed");
+    }
     for (let i = 0; i < ParticipantNumber; i++) {
         offerlist.push(Math.floor(1000 + Math.random() * 9000));
+        if(i==0){
+            typeList.push("host");
+        }
+        else{
+            typeList.push("participant");
+        }
     }
     console.log("offerlist", offerlist);
     if (clientID === null || clientID === undefined) {
         res.status(400).send("client_id is required");
     }
     try{
-        let response = await axios.post(`${DSS_URL}/api/meeting/addMeeting`, { meetingID: roomID, numberOfParticipants: ParticipantNumber, clientID: clientID, typeList: typeList, participants: participants, offerid: offeridList });
-        console.log(response.data);
+        // let response = await axios.post(`${DSS_URL}/nl/addMeeting`, { meetingID: roomID, numberOfParticipants: ParticipantNumber, clientID: clientID, typeList: typeList, participants: participants, offeridList: offerlist });
+        // console.log(response.data);
         res.status(200).send({ roomID, offerlist });
     }
     catch(err){
@@ -48,12 +59,6 @@ const users = {};
 const socketToRoom = {};
 
 io.on('connection', socket => {
-    // Add a socket event listener for creating a room
-    // socket.on('createRoom', () => {
-    //     const roomID = uuid();
-    //     const offer = Math.floor(1000 + Math.random() * 9000);
-    //     socket.emit('room created', { roomID, offer });
-    // });
 
     socket.on("join room", roomID => {
         if (users[roomID]) {
@@ -94,7 +99,3 @@ io.on('connection', socket => {
 let port = process.env.PORT || 8000;
 
 server.listen(port, () => console.log(`server is running on port ${port}`));
-
-
-
-
