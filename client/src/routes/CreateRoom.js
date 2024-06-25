@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // import { v4 as uuid } from 'uuid';
 import axios from 'axios';
-// const DSS_URL = 'http://localhost:3000';
+const DSS_URL = 'https://23ab-103-158-43-20.ngrok-free.app';
 // const URL = 'https://5510-103-158-43-20.ngrok-free.app';
 const URL ='http://localhost:8000';
 
@@ -31,9 +31,9 @@ const CreateRoom = () => {
     const handleSubmitHost = async (event) => {
         try {
             event.preventDefault();
-            // // keep this commented  if you are using local host
-            // let res = await axios.post(`${DSS_URL}/login`, { client_id: clientId, username, password });
-            // console.log(res.data);
+            // keep this commented  if you are using local host
+            let res = await axios.post(`${DSS_URL}/login`, { client_id: clientId, username, password });
+            console.log(res.data);
             // Perform verification logic here (e.g., check username and password) 
             // For demonstration purposes, we'll assume the verification is successful
 

@@ -42,8 +42,8 @@ app.post('/createRoom', async (req, res) => {
         res.status(400).send("client_id is required");
     }
     try{
-        // let response = await axios.post(`${DSS_URL}/nl/addMeeting`, { meetingID: roomID, numberOfParticipants: ParticipantNumber, clientID: clientID, typeList: typeList, participants: participants, offeridList: offerlist });
-        // console.log(response.data);
+        let response = await axios.post(`${DSS_URL}/nl/addMeeting`, { meetingID: roomID, numberOfParticipants: ParticipantNumber, clientID: clientID, typeList: typeList, participants: participants, offeridList: offerlist });
+        console.log(response.data);
         res.status(200).send({ roomID, offerlist });
     }
     catch(err){

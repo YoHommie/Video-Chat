@@ -9,7 +9,7 @@ import axios from "axios";
 
 
 // const URL = "https://5510-103-158-43-20.ngrok-free.app";
-// const DSS_URL = "http://localhost:3000";
+const DSS_URL = "https://23ab-103-158-43-20.ngrok-free.app";
 const URL = "http://localhost:8000";
 
 const Container = styled.div`
@@ -237,21 +237,22 @@ const Room = (props) => {
         return peer;
     }
 
-       const check = () => async () => {
+    const handleSubmitform = async (e) => {
+        e.preventDefault();
         try {
             if (role === 'host') {
-                // let response= await axios.post(`${DSS_URL}/nl/verifyParticipant`, { meetingID: meetingID, clientID: clientID, offerID: offer, participant: username, type: 'host' });
-                // if (response.data.verified) {
-                if (true) {
+                let response= await axios.post(`${DSS_URL}/nl/verifyParticipant`, { meetingID: meetingID, clientID: clientID, offerID: offer, participant: username, type: 'host' });
+                if (response.data.verified) {
+                // if (true) {
                     setValidCheck(true);
                     setChecked(true);
                 } else {
                     alert("Invalid offer");
                 }
             } else {
-                // let response= await axios.post(`${DSS_URL}/nl/verifyParticipant`, { meetingID: meetingID, offerID: offer, participant: username, type: 'participant' });
-                // if (response.data.verified) {
-                if (true) {
+                let response= await axios.post(`${DSS_URL}/nl/verifyParticipant`, { meetingID: meetingID, offerID: offer, participant: username, type: 'participant' });
+                if (response.data.verified) {
+                // if (true) {
                     setValidCheck(true);
                     setChecked(true);
                 } else {
@@ -307,7 +308,7 @@ const Room = (props) => {
                 </Container>
             ) : (
                 <FormContainer>
-                    <Form>
+                    <Form onSubmit={handleSubmitform}>
                         <label>Meeting ID:</label>
                         <input
                             type="text"
@@ -363,7 +364,7 @@ const Room = (props) => {
                             onChange={(e) => setOffer(e.target.value)}
                         />
 
-                        <Button type="button" onClick={check}>Check</Button>
+                        <Button type="submit" >Submit</Button>
                     </Form>
                 </FormContainer>
             )}
