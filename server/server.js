@@ -6,6 +6,9 @@ const server = http.createServer(app);
 const socket = require("socket.io");
 const io = socket(server);
 const { v4: uuid } = require('uuid');
+const axios = require('axios');
+
+const DSS_URL = process.env.DSS_URL || 'http://localhost:3000';
 
 app.use(express.json());
 app.use(express.static(__dirname + './../client/build'));
@@ -15,15 +18,29 @@ const cors = require('cors');
 app.use(cors());
 
 
-app.get('/createRoom', (req, res) => {
+app.post('/createRoom', async (req, res) => {
     const roomID = uuid();
-    const offer = Math.floor(1000 + Math.random() * 9000);
-    res.send({ roomID, offer });
+    const clientID = req.body.client_id;
+    let ParticipantNumber = req.body.participant.length;
+    let offerlist = [];
+    for (let i = 0; i < ParticipantNumber; i++) {
+        offerlist.push(Math.floor(1000 + Math.random() * 9000));
+    }
+    console.log("offerlist", offerlist);
+    if (clientID === null || clientID === undefined) {
+        res.status(400).send("client_id is required");
+    }
+    try{
+        let response = await axios.post(`${DSS_URL}/api/meeting/addMeeting`, { meetingID: roomID, numberOfParticipants: ParticipantNumber, clientID: clientID, typeList: typeList, participants: participants, offerid: offeridList });
+        console.log(response.data);
+        res.status(200).send({ roomID, offerlist });
+    }
+    catch(err){
+        console.log(err);
+    }
 });
 
-// app.get('/room/:roomID', (req, res) => {
-//     res.send({ roomID: req.params.roomID });
-// });
+
 
 
 const users = {};
@@ -78,6 +95,6 @@ let port = process.env.PORT || 8000;
 
 server.listen(port, () => console.log(`server is running on port ${port}`));
 
-// check
+
 
 

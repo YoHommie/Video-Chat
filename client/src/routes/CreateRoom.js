@@ -1,39 +1,29 @@
 import React, { useState, useEffect } from 'react';
 // import { v4 as uuid } from 'uuid';
 import axios from 'axios';
-// const URL ='https://d7ad-103-158-43-46.ngrok-free.app';
-const URL ='https://localhost:8000';
+const URL = 'https://d6ec-103-158-43-20.ngrok-free.app';
+// const URL ='https://localhost:8000';
 
 
 const CreateRoom = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [clientId, setClientId] = useState('');
+    const [participantCreated, setParticipantCreated] = useState(false);
+    const [ParticipantNumber, setParticipantNumber] = useState(0);
+    const [participant, setParticipant] = useState([]);
     const [isHostVerified, setIsHostVerified] = useState(false); // State to track participant verification
     const [url, setUrl] = useState('');
-    const [offer, setOffer] = useState('');
+    const [offerlist, setOfferlist] = useState([]);
 
     useEffect(() => {
-        // Initialize localStorage value if not already set
-        if (localStorage.getItem('validPartiUser')) {
-            localStorage.setItem('validPartiUser', 'false');
-        }
         if (localStorage.getItem('validHostUser')) {
-            localStorage.setItem('validHostUser', 'false');
+            setIsHostVerified(true);
+            setClientId(localStorage.getItem('clientID'));
+            setUsername(localStorage.getItem('username'));
         }
     }, []);
 
-    let create = async () => {
-        let response = await axios.get(`${URL}/createRoom`);
-        console.log(response.data);
-        let id = response.data.roomID;
-        let offer = response.data.offer;
-        // const id = uuid();
-        // const offer = Math.floor(1000 + Math.random() * 9000);
-        setOffer(offer);
-        setUrl(`${id}`);
-        localStorage.setItem('offer', offer);
-    }
 
 
     const handleSubmitHost = async (event) => {
@@ -46,14 +36,41 @@ const CreateRoom = () => {
 
             // Perform verification logic here (e.g., check username and password) 
             // For demonstration purposes, we'll assume the verification is successful
+
             setIsHostVerified(true);
+            handleAddParticipant(username,0);
             localStorage.setItem('validHostUser', 'true');
+            localStorage.setItem('clientID', clientId);
+            localStorage.setItem('username', username);
             alert("Verification successful!");
         } catch (err) {
             alert("Invalid credentials!");
             console.log(err);
         }
     };
+
+    const handleSubmitParticipant = async (event) => {
+        try {
+            event.preventDefault();
+            //passing the clientID and participant details to the backend
+            let response = await axios.post(`${URL}/createRoom`, { client_id: localStorage.getItem('clientID'), participant: participant});
+            setParticipantCreated(true);
+            console.log(response.data);
+            let id = response.data.roomID;
+            let offerlist = response.data.offerlist;
+            setOfferlist(offerlist);
+            setUrl(`${id}`);
+
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const handleAddParticipant = (value,index) => {
+        let temp = [...participant];
+        temp[index] = value;
+        setParticipant(temp);
+    }
 
     return (
         <div className="create-room-container">
@@ -94,12 +111,57 @@ const CreateRoom = () => {
                         <button type="submit">Submit</button>
                     </form>
                 ) : (
-                    <div>
-                        <button onClick={create}>Create room</button>
-                        <div>Offer: {offer}</div>
-                        <div>Meeting ID: {url}</div>
+                    // crating participant detail form here
+                    !participantCreated ?
+                        (<div>
+                            <div>Participant Details:</div>
+                            <form className="host-form" onSubmit={handleSubmitParticipant}>
+                                <div className="form-group">
+                                    <label>
+                                        Participant Number:
+                                        <input
+                                            type="text"
+                                            value={ParticipantNumber}
+                                            onChange={(e) => setParticipantNumber(e.target.value)}
+                                        />
+                                    </label>
+                                </div>
+                                {
+                                    //displaying the form based on the number of participants
+                                    Array.from({ length: ParticipantNumber }, (_, i) => i).map((item, index) => {
+                                        return (
+                                            <div key={index}>
+                                                <div className="form-group">
+                                                    <label>
+                                                        Participant {index + 1} Name:
+                                                        <input
+                                                            type="text"
+                                                            value={username}
+                                                            onChange={(e) => {handleAddParticipant(e.target.value,index);}}
+                                                        />
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        )
+                                    })
+                                }
+                                <button type="submit">Submit Details</button>
+                            </form>
 
-                    </div>
+                        </div>) : (
+                            <div>
+                                <div>Meeting ID: {url}</div>
+                                <div>Participant Details:</div>
+                                {participant.map((item, index) => {
+                                    return (
+                                        <div key={index}>
+                                            <div>Participant {index + 1} Name: {item}</div>
+                                            <div>Offer: {offerlist[index]}</div>
+                                        </div>
+                                    )
+                                })} 
+                            </div>
+                        )
                 )}
             </div>
         </div>
