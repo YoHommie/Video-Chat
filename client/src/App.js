@@ -1,17 +1,19 @@
 import React from 'react';
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CreateRoom from "./routes/CreateRoom";
 import Room from "./routes/Room";
+import HomePage from "./routes/HomePage";
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Switch>
-        <Route path="/" exact component={CreateRoom} />
-        <Route path="/room/:roomID" component={Room} />
-      </Switch>
-    </BrowserRouter>
-  );
-}
+const App = () => (
+  <Router>
+      <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/room" element={<Room />} />
+          <Route path="/host" element={<CreateRoom />} />
+      </Routes>
+  </Router>
+);
 
 export default App;
+
+
