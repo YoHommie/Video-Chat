@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 // import { v4 as uuid } from 'uuid';
 import axios from 'axios';
-// const URL ='https://d7ad-103-158-43-46.ngrok-free.app';
-const URL ='https://localhost:8000';
+const URL ='https://971f-103-158-43-20.ngrok-free.app';
+// const URL ='http://localhost:8000';
 
 
 const CreateRoom = () => {
@@ -28,6 +28,7 @@ const CreateRoom = () => {
         console.log(response.data);
         let id = response.data.roomID;
         let offer = response.data.offer;
+        console.log(response.data);
         // const id = uuid();
         // const offer = Math.floor(1000 + Math.random() * 9000);
         setOffer(offer);

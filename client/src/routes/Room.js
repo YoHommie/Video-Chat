@@ -7,8 +7,8 @@ import styled from "styled-components";
 
 
 
-// const URL ="https://fe3b-103-158-43-46.ngrok-free.app";
-const URL ="https://localhost:8000";
+const URL ="https://971f-103-158-43-20.ngrok-free.app";
+// const URL ="http://localhost:8000";
 
 const Container = styled.div`
     display: grid;
@@ -114,7 +114,7 @@ const Button = styled.button`
     }
 `;
 
-const ButtonDisonnect = styled.buttonDisconnect`
+const ButtonDisonnect = styled.button`
     padding: 10px;
     border: none;
     border-radius: 5px;
