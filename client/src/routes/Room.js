@@ -274,6 +274,8 @@ const Room = (props) => {
     }
 
     function handleLeaveMeeting() {
+        //disconneting with the socket
+        socketRef.current.emit("disconnect");
         window.location.href = "/";
     }
 
