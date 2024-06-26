@@ -1,63 +1,19 @@
 
 import React, { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import io from "socket.io-client";
 import Peer from "simple-peer";
 import styled from "styled-components";
 import axios from "axios";
 import config from '../config.json';
+import Video from "../component/video";
 
 
 
 const DSS_URL = config.DSS_URL || "http://localhost:3000";
 const URL = config.URL || "http://localhost:8000";
 
-const Container = styled.div`
-    display: grid;
-    gap: 10px;
-    padding: 20px;
-    height: 100vh;
-    width: 90%;
-    margin: auto;
-    align-content: center;
-    justify-content: center;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    grid-template-rows: auto;
-`;
 
-const StyledVideo = styled.video`
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: relative;
-`;
-
-const UserDataOverlay = styled.div`
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
-    padding: 2px 5px;
-    border-radius: 5px;
-    font-size: 12px;
-`;
-
-const Video = ({ peer, username }) => {
-    const ref = useRef();
-
-    useEffect(() => {
-        peer.on("stream", stream => {
-            ref.current.srcObject = stream;
-        });
-    }, [peer]);
-
-    return (
-        <div style={{ position: "relative" }}>
-            <StyledVideo playsInline autoPlay ref={ref} />
-            <UserDataOverlay>{username}</UserDataOverlay>
-        </div>
-    );
-};
 
 const videoConstraints = {
     height: window.innerHeight / 2,
@@ -119,7 +75,7 @@ const ButtonDisonnect = styled.button`
     padding: 10px;
     border: none;
     border-radius: 5px;
-    background: #red;
+    background: red;
     color: white;
     cursor: pointer;
     &:hover {
@@ -134,12 +90,64 @@ const ButtonContainer = styled.div`
     gap: 10px;
 `;
 
-const Room = (props) => {
+const Info = styled.span`
+    color: white;
+    margin: 0 5px;
+    background-color: grey;
+    padding: 2px 5px;
+    border-radius: 5px;
+    `;
+
+const Container = styled.div`
+    display: grid;
+    gap: 10px;
+    padding: 20px;
+    height: 100vh;
+    width: 90%;
+    margin: auto;
+    align-content: center;
+    justify-content: center;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-rows: auto;
+`;
+
+const StyledVideo = styled.video`
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: relative;
+`;
+
+const UserDataOverlay = styled.div`
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.0);
+    color: white;
+    padding: 2px 5px;
+    border-radius: 5px;
+    font-size: 12px;
+`;
+
+
+
+
+const Room = () => {
+
+    const location = useLocation();
+
+    // Helper function to get query parameters
+    const getQueryParams = (search) => {
+        return new URLSearchParams(search);
+    };
+
+
     const [peers, setPeers] = useState([]);
     const socketRef = useRef();
     const userVideo = useRef();
     const userStream = useRef();
     const peersRef = useRef([]);
+    const [disconnect, setDisconnect] = useState(false);
     const [meetingID, setMeetingID] = useState("");
     const [offer, setOffer] = useState('');
     const [clientID, setClientID] = useState('');
@@ -152,7 +160,17 @@ const Room = (props) => {
     const [videoEnabled, setVideoEnabled] = useState(true);
     const [audioEnabled, setAudioEnabled] = useState(true);
 
+
+
+
     useEffect(() => {
+        const queryParams = getQueryParams(location.search);
+        if (queryParams.get('mID') && queryParams.get('oID')) {
+            queryParams.get('t')?.toLowerCase() === 'p' ? setRole('participant') : setRole('host');
+            setMeetingID(queryParams.get('mID'));
+            setOffer(queryParams.get('oID'));
+        }
+
         const clientID = localStorage.getItem('clientID');
         clientID && setClientID(clientID);
         const username = localStorage.getItem('username');
@@ -191,8 +209,9 @@ const Room = (props) => {
                     item.peer.signal(payload.signal);
                 });
             });
+            disconnect && socketRef.current.emit('disconnect');
         }
-    }, [checked, meetingID]);
+    }, [checked, meetingID,location,disconnect]);
 
     function createPeer(userToSignal, callerID, stream) {
         const peer = new Peer({
@@ -240,18 +259,19 @@ const Room = (props) => {
         e.preventDefault();
         try {
             if (role === 'host') {
-                let response= await axios.post(`${DSS_URL}/nl/verifyParticipant`, { meetingID: meetingID, clientID: clientID, offerID: offer, participant: username, type: 'host' });
+                let response = await axios.post(`${DSS_URL}/nl/verifyParticipant`, { meetingID: meetingID, clientID: clientID, offerID: offer, participant: username, type: 'host' });
                 if (response.data.verified) {
-                // if (true) {
+                    // if (true) {
                     setValidCheck(true);
                     setChecked(true);
+                    localStorage.setItem('clientID', clientID);
                 } else {
                     alert("Invalid offer");
                 }
             } else {
-                let response= await axios.post(`${DSS_URL}/nl/verifyParticipant`, { meetingID: meetingID, offerID: offer, participant: username, type: 'participant' });
+                let response = await axios.post(`${DSS_URL}/nl/verifyParticipant`, { meetingID: meetingID, offerID: offer, participant: username, type: 'participant' });
                 if (response.data.verified) {
-                // if (true) {
+                    // if (true) {
                     setValidCheck(true);
                     setChecked(true);
                 } else {
@@ -274,8 +294,7 @@ const Room = (props) => {
     }
 
     function handleLeaveMeeting() {
-        //disconneting with the socket
-        socketRef.current.emit("disconnect");
+        setDisconnect(true);
         window.location.href = "/";
     }
 
@@ -290,9 +309,17 @@ const Room = (props) => {
                 >
                     <div style={{ position: "relative" }}>
                         <StyledVideo muted ref={userVideo} autoPlay playsInline />
-                        <UserDataOverlay>{username}</UserDataOverlay>
+                        <UserDataOverlay>{
+                            <span>
+                                <Info> {username} </Info>
+                                <Info> {audioEnabled ? "Audio Enabled" : "Muted"} </Info>
+                                <Info> {videoEnabled ? "Video Enabled" : "Video Off"} </Info>
+                            </span>
+                        }</UserDataOverlay>
                     </div>
                     {peers.map((peer, index) => (
+                        // getting the username of the participant
+
                         <Video key={index} peer={peer} username={peer.peerID} />
                     ))}
                     <ButtonContainer>
@@ -329,6 +356,18 @@ const Room = (props) => {
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
 
+                                {!localStorage.getItem('clientID') &&
+                                    <>
+                                        <Label>clientID:</Label>
+                                        <Input
+                                            type="text"
+                                            value={clientID}
+                                            onChange={(e) => setClientID(e.target.value)}
+                                        />
+                                    </>
+                                }
+
+
                                 <Label>Password:</Label>
                                 <Input
                                     type="text"
@@ -363,7 +402,7 @@ const Room = (props) => {
                             onChange={(e) => setOffer(e.target.value)}
                         />
 
-                        <Button type="submit" >Submit</Button>
+                        <Button type="submit" >Join Meet</Button>
                     </Form>
                 </FormContainer>
             )}

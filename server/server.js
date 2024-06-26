@@ -5,13 +5,18 @@ const app = express();
 const server = http.createServer(app);
 const socket = require("socket.io");
 const io = socket(server);
+const path = require('path');
 const { v4: uuid } = require('uuid');
 const axios = require('axios');
 
 const DSS_URL = process.env.DSS_URL || 'http://localhost:3000';
 
 app.use(express.json());
-app.use(express.static(__dirname + './../client/build'));
+app.use(express.static(path.join(__dirname ,'./../client/build')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './../client/build', 'index.html'));
+});
 
 // using cors to allow cross-origin requests
 const cors = require('cors');
@@ -21,20 +26,24 @@ app.use(cors());
 app.post('/createRoom', async (req, res) => {
     const roomID = uuid();
     const clientID = req.body.client_id;
+    const URL = req.body.URL;
     let ParticipantNumber = req.body.participant.length;
     let offerlist = [];
     let typeList = [];
+    let meetlink=[];
     let participants = req.body.participant;
     if(ParticipantNumber>3){
         res.status(400).send("Max 3 participants allowed");
     }
     for (let i = 0; i < ParticipantNumber; i++) {
         offerlist.push(Math.floor(1000 + Math.random() * 9000));
+        meetlink.push(`${URL}/room?mID=${roomID}&oID=${offerlist[i]}`);
         if(i==0){
             typeList.push("host");
         }
         else{
             typeList.push("participant");
+            meetlink[i]= meetlink[i]+"&t=P";
         }
     }
     console.log("offerlist", offerlist);
@@ -44,7 +53,7 @@ app.post('/createRoom', async (req, res) => {
     try{
         let response = await axios.post(`${DSS_URL}/nl/addMeeting`, { meetingID: roomID, numberOfParticipants: ParticipantNumber, clientID: clientID, typeList: typeList, participants: participants, offeridList: offerlist });
         console.log(response.data);
-        res.status(200).send({ roomID, offerlist });
+        res.status(200).send({ roomID, offerlist, meetlink });
     }
     catch(err){
         console.log(err);

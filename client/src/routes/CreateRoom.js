@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // import { v4 as uuid } from 'uuid';
 import axios from 'axios';
 import config from '../config.json';
+import MeetingDetails from '../component/MeetingDetails';
 const DSS_URL = config.DSS_URL || 'http://localhost:3000';
 const URL = config.URL || 'http://localhost:8000';
 
@@ -16,6 +17,7 @@ const CreateRoom = () => {
     const [isHostVerified, setIsHostVerified] = useState(false); // State to track participant verification
     const [url, setUrl] = useState('');
     const [offerlist, setOfferlist] = useState([]);
+    const [meetlink, setMeetlink] = useState([]);
 
     useEffect(() => {
         if (localStorage.getItem('validHostUser')) {
@@ -25,6 +27,11 @@ const CreateRoom = () => {
             setParticipant([localStorage.getItem('username')]);
         }
     }, []);
+
+    const labelstyle = {
+        width: "100%",
+        fontSize: "14px",
+    }
 
 
 
@@ -53,13 +60,14 @@ const CreateRoom = () => {
         try {
             event.preventDefault();
             //passing the clientID and participant details to the backend
-            let response = await axios.post(`${URL}/createRoom`, { client_id: localStorage.getItem('clientID'), participant: participant });
+            let response = await axios.post(`${URL}/createRoom`, { client_id: localStorage.getItem('clientID'), participant: participant, URL: URL });
             setParticipantCreated(true);
             console.log(response.data);
             let id = response.data.roomID;
             let offerlist = response.data.offerlist;
             setOfferlist(offerlist);
             setUrl(`${id}`);
+            setMeetlink(response.data.meetlink);
 
         } catch (err) {
             console.log(err);
@@ -77,10 +85,14 @@ const CreateRoom = () => {
             <div className="role-section">
                 {!isHostVerified ? (
                     <div>
-                        <div>You are a host:</div>
+                        <div
+                            style={{
+                                textAlign: "center",
+                                fontSize: "20px",
+                            }}>SignIN</div>
                         <form onSubmit={handleSubmitHost} className="host-form">
                             <div className="form-group">
-                                <label>
+                                <label style={labelstyle}>
                                     Client Id:
                                     <input
                                         type="text"
@@ -90,7 +102,7 @@ const CreateRoom = () => {
                                 </label>
                             </div>
                             <div className="form-group">
-                                <label>
+                                <label style={labelstyle}>
                                     Username:
                                     <input
                                         type="text"
@@ -100,7 +112,7 @@ const CreateRoom = () => {
                                 </label>
                             </div>
                             <div className="form-group">
-                                <label>
+                                <label style={labelstyle}>
                                     Password:
                                     <input
                                         type="password"
@@ -115,10 +127,14 @@ const CreateRoom = () => {
                     // crating participant detail form here
                     !participantCreated ?
                         (<div>
-                            <div>Participant Details:</div>
+                            <div style={{
+                                textAlign: "center",
+                                fontSize: "20px",
+                            }}>Participant Details</div>
                             <form className="host-form" onSubmit={handleSubmitParticipant}>
                                 <div className="form-group">
-                                    <label>
+                                    <label
+                                        style={labelstyle}>
                                         Participant Number:
                                         <input
                                             type="text"
@@ -129,15 +145,16 @@ const CreateRoom = () => {
                                 </div>
                                 {
                                     //displaying the form based on the number of participants
-                                   ParticipantNumber>3?(<div><h3>Number of Participant should be less then or equal to 3</h3></div>): Array.from({ length: ParticipantNumber }, (_, i) => i).map((item, index) => {
+                                    ParticipantNumber > 3 ? (<div><h3>Number of Participant should be less then or equal to 3</h3></div>) : Array.from({ length: ParticipantNumber }, (_, i) => i).map((item, index) => {
                                         return (
                                             <div key={index}>
                                                 <div className="form-group">
-                                                    <label>
+                                                    <label
+                                                        style={labelstyle}>
                                                         Participant {index + 1} Name:
                                                         <input
                                                             type="text"
-                                                            value={participant[index+1]}
+                                                            value={participant[index + 1]}
                                                             onChange={(e) => { handleAddParticipant(e.target.value, index + 1); }}
                                                         />
                                                     </label>
@@ -150,18 +167,7 @@ const CreateRoom = () => {
                             </form>
 
                         </div>) : (
-                            <div>
-                                <div>Meeting ID: {url}</div>
-                                <div>Participant Details:</div>
-                                {participant.map((item, index) => {
-                                    return (
-                                        <div key={index}>
-                                            <div>Participant {index + 1} Name: {item}</div>
-                                            <div>Offer: {offerlist[index]}</div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
+                            <MeetingDetails url={url} participant={participant} offerlist={offerlist} meetlink={meetlink} />    
                         )
                 )}
             </div>
