@@ -39,8 +39,8 @@ const CreateRoom = () => {
         try {
             event.preventDefault();
             // keep this commented  if you are using local host
-            let res = await axios.post(`${DSS_URL}/login`, { client_id: clientId, username, password });
-            console.log(res.data);
+            // let res = await axios.post(`${DSS_URL}/login`, { client_id: clientId, username, password });
+            // console.log(res.data);
             // Perform verification logic here (e.g., check username and password) 
             // For demonstration purposes, we'll assume the verification is successful
 
